@@ -88,3 +88,4 @@ VSCode에서 폴더 열고 → 우클릭 `Open with Live Server` → 저장 즉�
   - 완전 오프라인이 필요하면 폰트를 로컬에 내장 가능 (woff2 다운로드 후 @font-face)
 - 빌드 도구 없음 — 순수 HTML/CSS/JS, 정적 파일 그대로
 - 반응형 — 900px 이하에서 모바일 레이아웃 자동 적용
+
