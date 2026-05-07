@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hyung Taek Ahn — Computational Ship Hydrodynamics, University of Ulsan</title>
+<meta name="description" content="Computational Fluid Dynamics laboratory of Prof. Hyung Taek Ahn, School of Naval Architecture and Ocean Engineering, University of Ulsan. ULSAN3D solver, ship hydrodynamics, high-order numerical methods.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink: #0e1116;
+  --ink-soft: #2c3038;
+  --mid: #5b6470;
+  --line-soft: #e5e1d8;
+  --paper: #fcfbf8;
+  --paper-warm: #f1ece1;
+  --accent: #a8312f;
+  --accent-soft: #d4625f;
+
+  --display: 'Fraunces', Georgia, 'Apple SD Gothic Neo', 'Malgun Gothic', serif;
+  --body: 'Newsreader', Georgia, 'Apple SD Gothic Neo', 'Malgun Gothic', serif;
+  --mono: 'JetBrains Mono', 'Consolas', 'D2Coding', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--body);
+  font-weight: 400;
+  color: var(--ink);
+  background: var(--paper);
+  line-height: 1.55;
+  font-size: 17px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   IMAGE PROTECTION
+   ============================================ */
+.protected,
+.viz-card,
+.hero-viz {
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+img { -webkit-user-drag: none; pointer-events: none; }
+.bg-image {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* ============================================
+   TOPBAR
+   ============================================ */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(252, 251, 248, 0.85);
+  border-bottom: 1px solid var(--line-soft);
+}
+.topbar-inner {
+  max-width: 1400px; margin: 0 auto;
+  padding: 14px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.topbar-mark {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0;
+  color: var(--ink);
+  font-weight: 500;
+}
+.topbar-mark span { color: var(--mid); font-weight: 400; }
+.topbar-nav {
+  display: flex; gap: 28px;
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.topbar-nav a {
+  color: var(--mid); text-decoration: none;
+  transition: color 0.2s;
+  position: relative;
+}
+.topbar-nav a:hover { color: var(--ink); }
+.topbar-nav a:hover::after {
+  content: ''; position: absolute;
+  bottom: -4px; left: 0; right: 0;
+  height: 1px; background: var(--accent);
+}
+
+/* ============================================
+   HERO
+   ============================================ */
+.hero {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 96px 32px 0;
+}
+.hero-meta {
+  display: flex; flex-wrap: wrap; gap: 32px;
+  font-family: var(--mono); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--mid);
+  margin-bottom: 56px;
+}
+.hero-meta span { display: flex; align-items: center; gap: 10px; }
+.hero-meta span::before {
+  content: ''; width: 6px; height: 6px;
+  background: var(--accent); border-radius: 50%;
+  flex-shrink: 0;
+}
+.hero-title {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(40px, 7.2vw, 108px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variation-settings: "opsz" 144, "SOFT" 30;
+  margin-bottom: 8px;
+  white-space: nowrap;
+}
+.hero-title em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--accent);
+  font-variation-settings: "opsz" 144, "SOFT" 100;
+  margin-left: 0.08em;
+}
+.hero-title-ko {
+  font-style: normal;
+  color: var(--mid);
+  font-size: 0.34em;
+  font-weight: 300;
+  vertical-align: 0.42em;
+  margin-left: 0.35em;
+  font-family: var(--display);
+  letter-spacing: -0.01em;
+}
+.hero-byline {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 64px;
+  align-items: end;
+  border-top: 1px solid var(--ink);
+  padding-top: 32px;
+  margin-top: 24px;
+}
+.hero-byline-en {
+  font-family: var(--display);
+  font-size: 24px;
+  line-height: 1.35;
+  max-width: 560px;
+  font-style: italic;
+  font-weight: 300;
+  color: var(--ink-soft);
+  font-variation-settings: "opsz" 60;
+}
+.hero-byline-ko {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--mid);
+  text-align: right;
+  line-height: 2;
+}
+
+/* ============================================
+   HERO VISUALIZATION
+   ============================================ */
+.hero-viz {
+  margin: 64px auto 0;
+  max-width: 1400px;
+  padding: 0 32px;
+  position: relative;
+}
+.hero-viz-frame {
+  position: relative;
+  aspect-ratio: 4400 / 1238;
+  overflow: hidden;
+  background: var(--paper);
+}
+.hero-viz-bg {
+  position: absolute; inset: 0;
+  background-image: url('assets/hero_golfball_wake.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.hero-viz-watermark {
+  position: absolute;
+  bottom: 18px; right: 22px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: rgba(14, 17, 22, 0.32);
+  pointer-events: none;
+  text-transform: uppercase;
+}
+.hero-viz-caption {
+  margin-top: 18px;
+  display: flex; justify-content: space-between;
+  font-family: var(--mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--mid);
+}
+
+/* ============================================
+   SECTION CONTAINER
+   ============================================ */
+.section {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 128px 32px;
+}
+.section-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  margin-bottom: 16px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.section-title {
+  font-family: var(--display);
+  font-size: clamp(44px, 5.5vw, 80px);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  font-variation-settings: "opsz" 144, "SOFT" 30;
+}
+.section-title em {
+  font-style: italic;
+  font-weight: 300;
+  font-variation-settings: "opsz" 144, "SOFT" 100;
+}
+.section-lead {
+  font-family: var(--display);
+  font-size: 20px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  font-style: italic;
+  font-weight: 300;
+  max-width: 540px;
+  font-variation-settings: "opsz" 36;
+}
+.research-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: end;
+  margin-bottom: 72px;
+}
+
+/* ============================================
+   IDENTITY STRIP
+   ============================================ */
+.strip-section {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 96px 32px 0;
+}
+.strip {
+  display: grid;
+  grid-template-columns: 200px 1fr 1fr 1fr;
+  gap: 48px;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--line-soft);
+  padding: 32px 0;
+}
+.strip-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--mid);
+}
+.strip-value {
+  font-family: var(--display);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--ink-soft);
+  font-variation-settings: "opsz" 36;
+}
+.strip-value strong {
+  display: block;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.strip-value small {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--mid);
+  margin-top: 4px;
+}
+
+/* ============================================
+   RESEARCH GRID
+   ============================================ */
+.viz-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+.viz-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 24px;
+}
+.viz-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--paper-warm);
+  cursor: default;
+}
+.viz-card-1 { aspect-ratio: 16 / 10; }
+.viz-card-2 { aspect-ratio: 4 / 5; }
+.viz-card-3 { aspect-ratio: 4 / 3; background: white; }
+.viz-card-4 { aspect-ratio: 4 / 3; background: white; }
+.viz-bg {
+  position: absolute; inset: 0;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.viz-card.fill .viz-bg { background-size: cover; }
+.viz-meta {
+  position: absolute;
+  bottom: 16px; left: 16px; right: 16px;
+  z-index: 2;
+  display: flex; justify-content: space-between;
+  align-items: end;
+  pointer-events: none;
+}
+.viz-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: rgba(252, 251, 248, 0.92);
+  padding: 6px 10px;
+  backdrop-filter: blur(6px);
+  font-weight: 500;
+}
+.viz-watermark {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: rgba(14, 17, 22, 0.4);
+  text-transform: uppercase;
+}
+
+/* ============================================
+   CAREER TIMELINE
+   ============================================ */
+.career-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 80px;
+}
+.timeline {
+  border-top: 1px solid var(--ink);
+}
+.timeline-item {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 32px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.timeline-year {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--mid);
+  letter-spacing: 0.04em;
+  padding-top: 4px;
+}
+.timeline-content {
+  font-family: var(--display);
+  font-size: 18px;
+  line-height: 1.4;
+  color: var(--ink);
+  font-variation-settings: "opsz" 36;
+}
+.timeline-content strong {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.timeline-content span {
+  color: var(--mid);
+  font-size: 14px;
+  font-style: italic;
+  font-weight: 300;
+}
+
+/* ============================================
+   ULSAN3D FEATURE (DARK)
+   ============================================ */
+.feature {
+  background: var(--ink);
+  color: var(--paper);
+  margin-top: 0;
+}
+.feature .section-num { color: var(--accent-soft); }
+.feature .section-title { color: var(--paper); }
+.feature .section-lead { color: rgba(252, 251, 248, 0.7); }
+.feature-grid {
+  display: grid;
+  grid-template-columns: 5fr 4fr;
+  gap: 96px;
+  align-items: start;
+  margin-top: 16px;
+}
+.feature-quote {
+  font-family: var(--display);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(24px, 2.4vw, 32px);
+  line-height: 1.4;
+  color: rgba(252, 251, 248, 0.94);
+  font-variation-settings: "opsz" 60, "SOFT" 100;
+}
+.feature-quote::before {
+  content: '"';
+  display: block;
+  font-size: 96px;
+  line-height: 0.5;
+  color: var(--accent-soft);
+  margin-bottom: 32px;
+  font-style: normal;
+  font-weight: 300;
+}
+.feature-quote-author {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(252, 251, 248, 0.5);
+  margin-top: 32px;
+  font-style: normal;
+  display: block;
+}
+.feature-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px 48px;
+}
+.stat {
+  border-top: 1px solid rgba(252, 251, 248, 0.25);
+  padding-top: 16px;
+}
+.stat-num {
+  font-family: var(--display);
+  font-size: clamp(56px, 5vw, 80px);
+  font-weight: 400;
+  line-height: 1;
+  font-variation-settings: "opsz" 144;
+  letter-spacing: -0.02em;
+}
+.stat-num em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--accent-soft);
+}
+.stat-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(252, 251, 248, 0.55);
+  margin-top: 12px;
+  line-height: 1.4;
+}
+
+/* ============================================
+   PUBLICATIONS
+   ============================================ */
+.pub-list {
+  margin-top: 48px;
+  border-top: 1px solid var(--ink);
+  list-style: none;
+}
+.pub-item {
+  display: grid;
+  grid-template-columns: 60px 1fr 220px 80px;
+  gap: 32px;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--line-soft);
+  align-items: baseline;
+  transition: padding 0.2s;
+}
+.pub-item:hover { padding-left: 12px; }
+.pub-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--mid);
+  letter-spacing: 0.06em;
+}
+.pub-title {
+  font-family: var(--display);
+  font-size: 18px;
+  line-height: 1.4;
+  font-variation-settings: "opsz" 36;
+}
+.pub-venue {
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--mid);
+  font-weight: 300;
+}
+.pub-year {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-align: right;
+  color: var(--mid);
+  letter-spacing: 0.04em;
+}
+
+.see-all {
+  margin-top: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 4px;
+}
+.see-all:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ============================================
+   FOOTER
+   ============================================ */
+footer {
+  border-top: 1px solid var(--ink);
+  padding: 80px 32px 40px;
+  background: var(--paper);
+}
+.footer-inner {
+  max-width: 1400px; margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 64px;
+}
+.footer-mark {
+  font-family: var(--display);
+  font-size: clamp(32px, 3vw, 44px);
+  line-height: 1.1;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  font-variation-settings: "opsz" 144;
+}
+.footer-mark em { font-style: italic; color: var(--accent); font-weight: 300; }
+.footer-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--mid);
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+.footer-link {
+  font-family: var(--display);
+  font-size: 17px;
+  color: var(--ink);
+  text-decoration: none;
+  display: block;
+  margin-bottom: 8px;
+  transition: color 0.2s;
+}
+.footer-link:hover { color: var(--accent); }
+.footer-text {
+  font-family: var(--display);
+  font-size: 17px;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
+}
+.footer-bottom {
+  max-width: 1400px;
+  margin: 80px auto 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--mid);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* ============================================
+   DEMO NOTICE
+   ============================================ */
+.notice {
+  max-width: 1400px;
+  margin: 24px auto 0;
+  padding: 16px 24px;
+  background: var(--paper-warm);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  border-left: 3px solid var(--accent);
+}
+.notice strong { color: var(--accent); font-weight: 500; }
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 900px) {
+  .hero-byline,
+  .strip,
+  .career-grid,
+  .feature-grid,
+  .footer-inner,
+  .research-header,
+  .viz-grid,
+  .viz-row { grid-template-columns: 1fr; gap: 32px; }
+  .strip { gap: 24px; padding: 24px 0; }
+  .pub-item { grid-template-columns: 40px 1fr; gap: 16px; }
+  .pub-venue, .pub-year { display: none; }
+  .topbar-nav { display: none; }
+  .section { padding: 80px 24px; }
+  .hero { padding: 64px 24px 0; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ====================================
+     IMAGE PROTECTION SCRIPT
+     ==================================== -->
+<script>
+(function(){
+  document.addEventListener('contextmenu', function(e){
+    if (e.target.closest('.protected, .viz-card, .hero-viz, .footer-mark') || e.target.tagName === 'IMG') {
+      e.preventDefault();
+    }
+  });
+  document.addEventListener('dragstart', function(e){ e.preventDefault(); });
+  document.addEventListener('selectstart', function(e){
+    if (e.target.closest('.protected, .viz-card, .hero-viz')) e.preventDefault();
+  });
+  document.addEventListener('keydown', function(e){
+    var k = e.key.toLowerCase();
+    if ((e.ctrlKey || e.metaKey) && (k === 's' || k === 'u' || k === 'p')) {
+      e.preventDefault();
+    }
+  });
+})();
+</script>
+
+<!-- ====================================
+     TOPBAR
+     ==================================== -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-mark">cfd.ulsan.ac.kr <span>// computational ship hydrodynamics lab</span></div>
+    <nav class="topbar-nav">
+      <a href="#research">Research</a>
+      <a href="#solver">ULSAN3D</a>
+      <a href="#publications">Publications</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<!-- Demo notice -->
+<div class="notice">
+  <strong>DEMO PROTOTYPE</strong> &nbsp;·&nbsp; Single-page mockup. Right-click, drag, and Ctrl+S are blocked. Watermarks shown via CSS overlay; production version will bake watermarks into the images.
+</div>
+
+<!-- ====================================
+     HERO
+     ==================================== -->
+<section class="hero">
+  <div class="hero-meta">
+    <span>School of Naval Architecture &amp; Ocean Engineering</span>
+    <span>University of Ulsan</span>
+    <span>Established 2008</span>
+  </div>
+  <h1 class="hero-title">
+    Hyung Taek <em>Ahn</em><span class="hero-title-ko">안형택</span>
+  </h1>
+  <div class="hero-byline">
+    <p class="hero-byline-en">
+      Building computational tools to see how ships move through water — one unstructured mesh at a time.
+    </p>
+    <p class="hero-byline-ko">
+      Computational Fluid Dynamics<br>
+      Ship Hydrodynamics<br>
+      High-Order Numerical Methods
+    </p>
+  </div>
+</section>
+
+<!-- ====================================
+     HERO VISUALIZATION
+     ==================================== -->
+<div class="hero-viz">
+  <div class="hero-viz-frame">
+    <div class="hero-viz-bg protected"></div>
+    <div class="hero-viz-watermark">ULSAN3D · H.T.AHN</div>
+  </div>
+  <div class="hero-viz-caption">
+    <span>Fig. 01 — Vortical wake of a spinning golf ball, ULSAN3D</span>
+    <span>Cartesian mesh / Q-criterion isosurface · ASME Flow-Vis Award 2019</span>
+  </div>
+</div>
+
+<!-- ====================================
+     IDENTITY STRIP
+     ==================================== -->
+<section class="strip-section">
+  <div class="strip">
+    <div>
+      <div class="strip-label">Identity</div>
+    </div>
+    <div class="strip-value">
+      <strong>Professor</strong>
+      School of Naval Architecture &amp; Ocean Engineering, University of Ulsan
+    </div>
+    <div class="strip-value">
+      <strong>Office</strong>
+      Bldg. 41 · Room 318
+      <small>+82 (0)52 259 2164</small>
+    </div>
+    <div class="strip-value">
+      <strong>Email</strong>
+      htahn (at) ulsan.ac.kr
+      <small>youtube · github @ulsan3d</small>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================
+     RESEARCH SHOWCASE
+     ==================================== -->
+<section class="section" id="research" style="padding-top: 96px;">
+  <div class="research-header">
+    <div>
+      <div class="section-num">— 01 / Research</div>
+      <h2 class="section-title">Selected <em>visualizations</em></h2>
+    </div>
+    <p class="section-lead">
+      A small gallery of recent simulations from ULSAN3D — the lab's in-house unstructured-mesh CFD solver, developed continuously since the early 2000s.
+    </p>
+  </div>
+
+  <div class="viz-grid">
+    <div class="viz-card viz-card-1 protected fill">
+      <div class="viz-bg" style="background-image: url('assets/kcs_wake_rgb.png');"></div>
+      <div class="viz-meta">
+        <span class="viz-tag">KCS — Stern Vortex System</span>
+        <span class="viz-watermark">ULSAN3D · AHN</span>
+      </div>
+    </div>
+    <div class="viz-card viz-card-2 protected fill">
+      <div class="viz-bg" style="background-image: url('assets/auv_waves.png');"></div>
+      <div class="viz-meta">
+        <span class="viz-tag">BB2 Submarine — Free-Surface Wake</span>
+        <span class="viz-watermark">ULSAN3D · AHN</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="viz-row">
+    <div class="viz-card viz-card-3 protected">
+      <div class="viz-bg" style="background-image: url('assets/kcs_vortex_side.png');"></div>
+      <div class="viz-meta">
+        <span class="viz-tag">KCS — Bilge Vortex Detail</span>
+        <span class="viz-watermark">ULSAN3D · AHN</span>
+      </div>
+    </div>
+    <div class="viz-card viz-card-4 protected">
+      <div class="viz-bg" style="background-image: url('assets/free_surface_kcs.png');"></div>
+      <div class="viz-meta">
+        <span class="viz-tag">Breaking Wave — LES Comparison</span>
+        <span class="viz-watermark">ULSAN3D · AHN</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================
+     CAREER
+     ==================================== -->
+<section class="section" style="padding-top: 0;">
+  <div class="career-grid">
+    <div>
+      <div class="section-num">— 02 / Trajectory</div>
+      <h2 class="section-title">Education<br><em>&amp; career</em></h2>
+    </div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-year">2017—</div>
+        <div class="timeline-content">
+          <strong>Professor</strong>
+          <span>University of Ulsan</span>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-year">2016—17</div>
+        <div class="timeline-content">
+          <strong>Visiting Professor</strong>
+          <span>Dept. MAE, Prof. Hong Luo's Group, NC State University</span>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-year">2008—17</div>
+        <div class="timeline-content">
+          <strong>Assistant → Associate Professor</strong>
+          <span>University of Ulsan</span>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-year">2006—08</div>
+        <div class="timeline-content">
+          <strong>Postdoctoral Research Associate</strong>
+          <span>Theoretical Division, Los Alamos National Laboratory · Dr. M. Shashkov</span>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-year">2005—06</div>
+        <div class="timeline-content">
+          <strong>Research Scientist · Adjunct Professor</strong>
+          <span>ICES &amp; Dept. ASE/EM, The University of Texas at Austin</span>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-year">2001—05</div>
+        <div class="timeline-content">
+          <strong>Graduate Research Assistant</strong>
+          <span>Offshore Technology Research Center, The University of Texas at Austin</span>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-year">1999—2005</div>
+        <div class="timeline-content">
+          <strong>PhD, Aerospace Engineering</strong>
+          <span>Dept. of ASE/EM, The University of Texas at Austin · Prof. Y. Kallinderis &amp; Prof. C. Dawson</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================
+     ULSAN3D FEATURE (DARK)
+     ==================================== -->
+<div class="feature" id="solver">
+  <section class="section">
+    <div class="research-header">
+      <div>
+        <div class="section-num">— 03 / Solver</div>
+        <h2 class="section-title">ULSAN<em>3D</em></h2>
+      </div>
+      <p class="section-lead">
+        A high-order, cell-centered finite-volume CFD code for incompressible and weakly compressible flow on unstructured meshes — twenty years in the making.
+      </p>
+    </div>
+
+    <div class="feature-grid">
+      <div>
+        <p class="feature-quote">
+          A high-order computational framework for ship hydrodynamics — designed from the outset to span RANS to large-eddy simulation, with free-surface dynamics, fluid&#8211;structure interaction, and 6DOF body motion natively coupled within a unified unstructured/Cartesian overset-grid solver.
+          <span class="feature-quote-author">— On the design philosophy of ULSAN3D</span>
+        </p>
+      </div>
+      <div class="feature-stats">
+        <div class="stat">
+          <div class="stat-num">20<em>+</em></div>
+          <div class="stat-label">Years of continuous development</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num"><em>3D</em></div>
+          <div class="stat-label">Hybrid unstructured meshes — tet, prism, pyramid, hex</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num"><em>HO</em></div>
+          <div class="stat-label">High-order finite volume / DG spectral element</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num"><em>FSI/6DOF</em></div>
+          <div class="stat-label">Fluid–structure interaction · ALE · moving meshes</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ====================================
+     PUBLICATIONS
+     ==================================== -->
+<section class="section" id="publications">
+  <div class="research-header">
+    <div>
+      <div class="section-num">— 04 / Selected Publications</div>
+      <h2 class="section-title">Recent<br><em>writings</em></h2>
+    </div>
+    <p class="section-lead">
+      Five recent papers from a longer record. Full publication list available on Google Scholar and at the lab's archive page.
+    </p>
+  </div>
+
+  <ol class="pub-list">
+    <li class="pub-item">
+      <span class="pub-num">/01</span>
+      <span class="pub-title">High-Order WENO-based Semi-Implicit Projection Method for Incompressible Turbulent Flows: Development, Accuracy, and Reynolds Number Effects</span>
+      <span class="pub-venue">Int. J. Computational Fluid Dynamics</span>
+      <span class="pub-year">2024</span>
+    </li>
+    <li class="pub-item">
+      <span class="pub-num">/02</span>
+      <span class="pub-title">Discontinuous Galerkin Spectral Element Method for Elliptic Problems Based on First-Order Hyperbolic System</span>
+      <span class="pub-venue">J. KSIAM</span>
+      <span class="pub-year">2021</span>
+    </li>
+    <li class="pub-item">
+      <span class="pub-num">/03</span>
+      <span class="pub-title">Numerical Simulation of Flow over Stationary and Rotating Golf Ball on Cartesian Grid</span>
+      <span class="pub-venue">ASME J. Fluids Engineering</span>
+      <span class="pub-year">2020</span>
+    </li>
+    <li class="pub-item">
+      <span class="pub-num">/04</span>
+      <span class="pub-title">Hyperbolic Cell-centered Finite Volume Method for Incompressible Navier–Stokes Equations on Unstructured Grids</span>
+      <span class="pub-venue">Computers &amp; Fluids</span>
+      <span class="pub-year">2020</span>
+    </li>
+    <li class="pub-item">
+      <span class="pub-num">/05</span>
+      <span class="pub-title">A Geometric Multigrid Accelerated Incompressible Flow Simulation over Complex Geometries</span>
+      <span class="pub-venue">Computers &amp; Fluids</span>
+      <span class="pub-year">2020</span>
+    </li>
+  </ol>
+
+  <a class="see-all" href="#">See full record (35+ papers) →</a>
+</section>
+
+<!-- ====================================
+     FOOTER
+     ==================================== -->
+<footer id="contact">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-tag">Visit</div>
+      <p class="footer-mark">
+        University of <em>Ulsan</em><br>
+        Bldg. 41 · Rm 318
+      </p>
+    </div>
+    <div>
+      <div class="footer-tag">Around the web</div>
+      <a href="https://sites.google.com/view/hyungtaekahn" class="footer-link">Personal site →</a>
+      <a href="https://www.youtube.com/channel/UCZCMRecZOeny8XgUa4R3Yhg" class="footer-link">YouTube channel →</a>
+      <a href="https://github.com/ulsan3d" class="footer-link">GitHub @ulsan3d →</a>
+    </div>
+    <div>
+      <div class="footer-tag">Direct</div>
+      <a href="mailto:htahn@ulsan.ac.kr" class="footer-link">htahn@ulsan.ac.kr →</a>
+      <p class="footer-text">+82 (0)52 259 2164</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© Hyung Taek Ahn — All visualizations protected</span>
+    <span>cfd.ulsan.ac.kr</span>
+  </div>
+</footer>
+
+</body>
+</html>
